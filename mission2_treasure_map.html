@@ -58,7 +58,6 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transform: scaleX(-1);
       }
       #debug-info {
         position: absolute;
@@ -70,34 +69,42 @@
       }
       #camera-switch {
         position: absolute;
-        top: 15px;
-        right: 15px;
-        background: rgba(0, 0, 0, 0.5);
+        top: calc(50% + 40vw + 20px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
         border: 2px solid #00ffcc;
         color: #00ffcc;
-        padding: 10px 15px;
+        padding: 12px 25px;
         border-radius: 50px;
         font-family: 'Courier New', monospace;
         cursor: pointer;
         z-index: 100;
-        font-size: 16px;
+        font-size: 18px;
         transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
       }
       #camera-switch:hover {
         background: rgba(0, 255, 204, 0.2);
+        box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
       }
       #camera-switch:active {
-        transform: scale(0.95);
+        transform: translateX(-50%) scale(0.95);
+      }
+      @media (max-width: 400px) {
+        #camera-switch {
+          top: calc(50% + 150px + 20px);
+        }
       }
     </style>
   </head>
   <body>
     <div id="instructions">📸 Scannez la carte pour révéler le trésor</div>
     <div id="error-message"></div>
-    <button id="camera-switch">📷 Switch Camera</button>
     <div id="camera-preview">
       <video id="camera-feed" autoplay playsinline></video>
     </div>
+    <button id="camera-switch">📷 Switch Camera</button>
     <div id="debug-info"></div>
     <a-scene mindar-image="imageTargetSrc: Map.mind; autoStart: true;" embedded color-space="sRGB"
              renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
@@ -152,6 +159,8 @@
           .then(function(stream) {
             currentStream = stream;
             cameraFeed.srcObject = stream;
+            // Only flip the video when using front camera
+            cameraFeed.style.transform = facingMode === "user" ? "scaleX(-1)" : "scaleX(1)";
             debugInfo.textContent = `Browser: ${navigator.userAgent}\nCamera: Active (${facingMode})`;
           })
           .catch(function(err) {
