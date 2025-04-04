@@ -121,7 +121,8 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-video src="#treasureVideo" width="1.5" height="0.85" position="0 0 0"></a-video>
+        <a-video src="#treasureVideo" width="2" height="1.2" position="0 0 0" rotation="0 0 0" 
+                 material="shader: flat; transparent: true; opacity: 1"></a-video>
       </a-entity>
     </a-scene>
 
@@ -136,6 +137,7 @@
       let currentStream = null;
       let usingFrontCamera = false;
       let isVideoPlaying = false;
+      let isVideoLoaded = false;
 
       // Debug information
       debugInfo.textContent = `Browser: ${navigator.userAgent}\nLoading AR...`;
@@ -155,17 +157,9 @@
       });
 
       scene.addEventListener("targetFound", (event) => {
-        debugInfo.textContent += "\nTarget found! Attempting to play video...";
-        if (!isVideoPlaying) {
-          video.currentTime = 0; // Reset video to start
-          video.play()
-            .then(() => {
-              isVideoPlaying = true;
-              debugInfo.textContent += "\nVideo started playing";
-            })
-            .catch(err => {
-              debugInfo.textContent += "\nVideo play error: " + err.message;
-            });
+        debugInfo.textContent += "\nTarget found!";
+        if (isVideoLoaded && !isVideoPlaying) {
+          playVideo();
         }
       });
 
@@ -177,11 +171,31 @@
         }
       });
 
+      function playVideo() {
+        video.currentTime = 0;
+        video.play()
+          .then(() => {
+            isVideoPlaying = true;
+            debugInfo.textContent += "\nVideo started playing";
+            // Make sure the video is visible
+            const videoEntity = document.querySelector("a-video");
+            if (videoEntity) {
+              videoEntity.setAttribute("visible", "true");
+            }
+          })
+          .catch(err => {
+            debugInfo.textContent += "\nVideo play error: " + err.message;
+          });
+      }
+
       // Check video loading
       video.addEventListener("loadeddata", () => {
-        debugInfo.textContent += "\nVideo loaded successfully";
-        // Preload the video
-        video.load();
+        if (!isVideoLoaded) {
+          isVideoLoaded = true;
+          debugInfo.textContent += "\nVideo loaded successfully";
+          // Preload the video
+          video.load();
+        }
       });
 
       video.addEventListener("error", (err) => {
