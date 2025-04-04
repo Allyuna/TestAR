@@ -135,6 +135,7 @@
       
       let currentStream = null;
       let usingFrontCamera = false;
+      let isVideoPlaying = false;
 
       // Debug information
       debugInfo.textContent = `Browser: ${navigator.userAgent}\nLoading AR...`;
@@ -154,24 +155,33 @@
       });
 
       scene.addEventListener("targetFound", (event) => {
-        debugInfo.textContent += "\nTarget found!";
-        video.play().catch(err => {
-          debugInfo.textContent += "\nVideo play error: " + err.message;
-        });
+        debugInfo.textContent += "\nTarget found! Attempting to play video...";
+        if (!isVideoPlaying) {
+          video.currentTime = 0; // Reset video to start
+          video.play()
+            .then(() => {
+              isVideoPlaying = true;
+              debugInfo.textContent += "\nVideo started playing";
+            })
+            .catch(err => {
+              debugInfo.textContent += "\nVideo play error: " + err.message;
+            });
+        }
       });
 
       scene.addEventListener("targetLost", (event) => {
         debugInfo.textContent += "\nTarget lost";
-        video.pause();
-      });
-
-      scene.addEventListener("arError", (event) => {
-        debugInfo.textContent += "\nAR Error: " + event.detail.error;
+        if (isVideoPlaying) {
+          video.pause();
+          isVideoPlaying = false;
+        }
       });
 
       // Check video loading
       video.addEventListener("loadeddata", () => {
         debugInfo.textContent += "\nVideo loaded successfully";
+        // Preload the video
+        video.load();
       });
 
       video.addEventListener("error", (err) => {
@@ -236,6 +246,7 @@
 
       video.addEventListener('ended', () => {
         alert("🎉 Trésor trouvé !");
+        isVideoPlaying = false;
       });
     </script>
   </body>
