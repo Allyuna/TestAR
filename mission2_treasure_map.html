@@ -181,6 +181,7 @@
             const videoEntity = document.querySelector("a-video");
             if (videoEntity) {
               videoEntity.setAttribute("visible", "true");
+              videoEntity.setAttribute("material", "opacity", 1);
             }
           })
           .catch(err => {
@@ -193,8 +194,6 @@
         if (!isVideoLoaded) {
           isVideoLoaded = true;
           debugInfo.textContent += "\nVideo loaded successfully";
-          // Preload the video
-          video.load();
         }
       });
 
@@ -239,7 +238,7 @@
             debugInfo.textContent = `Browser: ${navigator.userAgent}\nCamera: Active (${facingMode})`;
           })
           .catch(function(err) {
-            showError("Camera access denied. Please allow camera access to use this feature.");
+            showError("Camera access denied. Please try a different browser.");
             console.error("Camera error:", err);
             debugInfo.textContent += "\nCamera Error: " + err.message;
           });
