@@ -66,6 +66,10 @@
         color: white;
         font-size: 12px;
         z-index: 100;
+        background: rgba(0,0,0,0.7);
+        padding: 10px;
+        border-radius: 5px;
+        max-width: 90%;
       }
       #camera-switch {
         position: absolute;
@@ -127,17 +131,40 @@
       const cameraFeed = document.querySelector("#camera-feed");
       const debugInfo = document.querySelector("#debug-info");
       const cameraSwitch = document.querySelector("#camera-switch");
+      const scene = document.querySelector("a-scene");
       
       let currentStream = null;
       let usingFrontCamera = false;
 
       // Debug information
-      debugInfo.textContent = `Browser: ${navigator.userAgent}`;
+      debugInfo.textContent = `Browser: ${navigator.userAgent}\nLoading AR...`;
 
       // Check if the browser supports the required features
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         showError("Your browser doesn't support camera access. Please try a different browser.");
       }
+
+      // Add event listeners for AR tracking
+      scene.addEventListener("targetFound", (event) => {
+        debugInfo.textContent += "\nTarget found!";
+        video.play().catch(err => {
+          debugInfo.textContent += "\nVideo play error: " + err.message;
+        });
+      });
+
+      scene.addEventListener("targetLost", (event) => {
+        debugInfo.textContent += "\nTarget lost";
+        video.pause();
+      });
+
+      // Check video loading
+      video.addEventListener("loadeddata", () => {
+        debugInfo.textContent += "\nVideo loaded successfully";
+      });
+
+      video.addEventListener("error", (err) => {
+        debugInfo.textContent += "\nVideo loading error: " + err.message;
+      });
 
       function stopCamera() {
         if (currentStream) {
