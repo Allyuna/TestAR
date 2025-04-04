@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mission 2 - AR Scan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe@1.2.0/dist/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/aframe/mindar-image-aframe.prod.js"></script>
+    <style>
+      body, html {
+        margin: 0;
+        overflow: hidden;
+        background: black;
+      }
+      #instructions {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #00ffcc;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 0 5px #00ffcc;
+        font-size: 18px;
+        z-index: 10;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="instructions">📸 Scannez la carte pour révéler le trésor</div>
+    <a-scene mindar-image="imageTargetSrc: Map.mind; autoStart: true;" embedded color-space="sRGB"
+             renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
+             device-orientation-permission-ui="enabled: true">
+      <a-assets>
+        <video id="treasureVideo" src="Treasure.mp4" autoplay loop="false" preload="auto"
+               crossorigin="anonymous" webkit-playsinline playsinline muted></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-video src="#treasureVideo" width="1.5" height="0.85" position="0 0 0"></a-video>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      const video = document.querySelector("#treasureVideo");
+      video.addEventListener('ended', () => {
+        alert("🎉 Trésor trouvé !");
+      });
+    </script>
+  </body>
+</html>
