@@ -68,11 +68,33 @@
         font-size: 12px;
         z-index: 100;
       }
+      #camera-switch {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid #00ffcc;
+        color: #00ffcc;
+        padding: 10px 15px;
+        border-radius: 50px;
+        font-family: 'Courier New', monospace;
+        cursor: pointer;
+        z-index: 100;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+      #camera-switch:hover {
+        background: rgba(0, 255, 204, 0.2);
+      }
+      #camera-switch:active {
+        transform: scale(0.95);
+      }
     </style>
   </head>
   <body>
     <div id="instructions">📸 Scannez la carte pour révéler le trésor</div>
     <div id="error-message"></div>
+    <button id="camera-switch">📷 Switch Camera</button>
     <div id="camera-preview">
       <video id="camera-feed" autoplay playsinline></video>
     </div>
@@ -97,7 +119,11 @@
       const errorMessage = document.querySelector("#error-message");
       const cameraFeed = document.querySelector("#camera-feed");
       const debugInfo = document.querySelector("#debug-info");
+      const cameraSwitch = document.querySelector("#camera-switch");
       
+      let currentStream = null;
+      let usingFrontCamera = false;
+
       // Debug information
       debugInfo.textContent = `Browser: ${navigator.userAgent}`;
 
@@ -106,24 +132,42 @@
         showError("Your browser doesn't support camera access. Please try a different browser.");
       }
 
-      // Request camera permissions with specific constraints for mobile
-      navigator.mediaDevices.getUserMedia({ 
-        video: {
-          facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+      function stopCamera() {
+        if (currentStream) {
+          currentStream.getTracks().forEach(track => track.stop());
+          currentStream = null;
         }
-      })
-        .then(function(stream) {
-          console.log("Camera access granted");
-          cameraFeed.srcObject = stream;
-          debugInfo.textContent += "\nCamera: Active";
+      }
+
+      function startCamera(facingMode) {
+        stopCamera();
+        
+        navigator.mediaDevices.getUserMedia({ 
+          video: {
+            facingMode: facingMode,
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
         })
-        .catch(function(err) {
-          showError("Camera access denied. Please allow camera access to use this feature.");
-          console.error("Camera error:", err);
-          debugInfo.textContent += "\nCamera Error: " + err.message;
-        });
+          .then(function(stream) {
+            currentStream = stream;
+            cameraFeed.srcObject = stream;
+            debugInfo.textContent = `Browser: ${navigator.userAgent}\nCamera: Active (${facingMode})`;
+          })
+          .catch(function(err) {
+            showError("Camera access denied. Please allow camera access to use this feature.");
+            console.error("Camera error:", err);
+            debugInfo.textContent += "\nCamera Error: " + err.message;
+          });
+      }
+
+      // Start with rear camera
+      startCamera("environment");
+
+      cameraSwitch.addEventListener('click', () => {
+        usingFrontCamera = !usingFrontCamera;
+        startCamera(usingFrontCamera ? "user" : "environment");
+      });
 
       function showError(message) {
         errorMessage.textContent = message;
