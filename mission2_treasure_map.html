@@ -36,11 +36,31 @@
         border-radius: 10px;
         display: none;
       }
+      #camera-preview {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 300px;
+        height: 300px;
+        border: 2px solid #00ffcc;
+        border-radius: 10px;
+        overflow: hidden;
+        z-index: 5;
+      }
+      #camera-preview video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     </style>
   </head>
   <body>
     <div id="instructions">📸 Scannez la carte pour révéler le trésor</div>
     <div id="error-message"></div>
+    <div id="camera-preview">
+      <video id="camera-feed" autoplay playsinline></video>
+    </div>
     <a-scene mindar-image="imageTargetSrc: Map.mind; autoStart: true;" embedded color-space="sRGB"
              renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
              device-orientation-permission-ui="enabled: true">
@@ -59,6 +79,7 @@
     <script>
       const video = document.querySelector("#treasureVideo");
       const errorMessage = document.querySelector("#error-message");
+      const cameraFeed = document.querySelector("#camera-feed");
       
       // Check if the browser supports the required features
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -69,6 +90,7 @@
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(function(stream) {
           console.log("Camera access granted");
+          cameraFeed.srcObject = stream;
         })
         .catch(function(err) {
           showError("Camera access denied. Please allow camera access to use this feature.");
