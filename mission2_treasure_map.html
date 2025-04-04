@@ -2,13 +2,16 @@
 <html>
   <head>
     <title>Mission 2 - AR Scan</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aframe@1.2.0/dist/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/aframe/mindar-image-aframe.prod.js"></script>
     <style>
       body, html {
         margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
         background: black;
       }
@@ -35,14 +38,17 @@
         background: rgba(0,0,0,0.8);
         border-radius: 10px;
         display: none;
+        z-index: 100;
       }
       #camera-preview {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 300px;
-        height: 300px;
+        width: 80vw;
+        height: 80vw;
+        max-width: 300px;
+        max-height: 300px;
         border: 2px solid #00ffcc;
         border-radius: 10px;
         overflow: hidden;
@@ -52,6 +58,15 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transform: scaleX(-1);
+      }
+      #debug-info {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        color: white;
+        font-size: 12px;
+        z-index: 100;
       }
     </style>
   </head>
@@ -61,6 +76,7 @@
     <div id="camera-preview">
       <video id="camera-feed" autoplay playsinline></video>
     </div>
+    <div id="debug-info"></div>
     <a-scene mindar-image="imageTargetSrc: Map.mind; autoStart: true;" embedded color-space="sRGB"
              renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
              device-orientation-permission-ui="enabled: true">
@@ -80,21 +96,33 @@
       const video = document.querySelector("#treasureVideo");
       const errorMessage = document.querySelector("#error-message");
       const cameraFeed = document.querySelector("#camera-feed");
+      const debugInfo = document.querySelector("#debug-info");
       
+      // Debug information
+      debugInfo.textContent = `Browser: ${navigator.userAgent}`;
+
       // Check if the browser supports the required features
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         showError("Your browser doesn't support camera access. Please try a different browser.");
       }
 
-      // Request camera permissions
-      navigator.mediaDevices.getUserMedia({ video: true })
+      // Request camera permissions with specific constraints for mobile
+      navigator.mediaDevices.getUserMedia({ 
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      })
         .then(function(stream) {
           console.log("Camera access granted");
           cameraFeed.srcObject = stream;
+          debugInfo.textContent += "\nCamera: Active";
         })
         .catch(function(err) {
           showError("Camera access denied. Please allow camera access to use this feature.");
           console.error("Camera error:", err);
+          debugInfo.textContent += "\nCamera Error: " + err.message;
         });
 
       function showError(message) {
