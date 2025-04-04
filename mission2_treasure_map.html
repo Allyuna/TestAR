@@ -145,6 +145,14 @@
       }
 
       // Add event listeners for AR tracking
+      scene.addEventListener("arReady", (event) => {
+        debugInfo.textContent += "\nAR System Ready";
+      });
+
+      scene.addEventListener("arError", (event) => {
+        debugInfo.textContent += "\nAR Error: " + event.detail.error;
+      });
+
       scene.addEventListener("targetFound", (event) => {
         debugInfo.textContent += "\nTarget found!";
         video.play().catch(err => {
@@ -157,6 +165,10 @@
         video.pause();
       });
 
+      scene.addEventListener("arError", (event) => {
+        debugInfo.textContent += "\nAR Error: " + event.detail.error;
+      });
+
       // Check video loading
       video.addEventListener("loadeddata", () => {
         debugInfo.textContent += "\nVideo loaded successfully";
@@ -165,6 +177,18 @@
       video.addEventListener("error", (err) => {
         debugInfo.textContent += "\nVideo loading error: " + err.message;
       });
+
+      // Check if Map.mind file exists
+      fetch('Map.mind')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Map.mind file not found');
+          }
+          debugInfo.textContent += "\nMap.mind file found";
+        })
+        .catch(error => {
+          debugInfo.textContent += "\nError loading Map.mind: " + error.message;
+        });
 
       function stopCamera() {
         if (currentStream) {
